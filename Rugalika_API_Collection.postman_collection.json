@@ -1,0 +1,2214 @@
+{
+  "info": {
+    "name": "Rugalika News API",
+    "description": "Complete API collection for Rugalika News System - A comprehensive news and community management platform",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Check API health status"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Send OTP Code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    console.log('OTP sent successfully');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/send-code",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "send-code"
+              ]
+            },
+            "description": "Send OTP code to user email"
+          }
+        },
+        {
+          "name": "Verify OTP Code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.data.accessToken);",
+                  "    pm.collectionVariables.set('refresh_token', response.data.refreshToken);",
+                  "    pm.collectionVariables.set('user_id', response.data.user._id);",
+                  "    console.log('Tokens saved to collection variables');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/verify-code",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-code"
+              ]
+            },
+            "description": "Verify OTP code and get JWT tokens"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.data.accessToken);",
+                  "    console.log('Access token refreshed');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh-token"
+              ]
+            },
+            "description": "Refresh access token using refresh token"
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Get current authenticated user profile"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+250788123456\",\n  \"location\": \"Kigali\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "profile"
+              ]
+            },
+            "description": "Update user profile information"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Logout user and blacklist token"
+          }
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/validate-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "validate-token"
+              ]
+            },
+            "description": "Validate if current token is still valid"
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/request-password-reset",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "request-password-reset"
+              ]
+            },
+            "description": "Request password reset (future implementation)"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset_token_here\",\n  \"newPassword\": \"new_password_123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "Reset password using token (future implementation)"
+          }
+        },
+        {
+          "name": "Change User Status (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/users/:userId/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "users",
+                ":userId",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{user_id}}"
+                }
+              ]
+            },
+            "description": "Change user status (Admin only)"
+          }
+        },
+        {
+          "name": "Get Auth Stats (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "stats"
+              ]
+            },
+            "description": "Get authentication statistics (Admin only)"
+          }
+        },
+        {
+          "name": "Clean Expired Tokens (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/clean-expired-tokens",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "clean-expired-tokens"
+              ]
+            },
+            "description": "Clean expired tokens from blacklist (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users?page=1&limit=10&status=active",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            },
+            "description": "Get all users with pagination and filtering (Admin only)"
+          }
+        },
+        {
+          "name": "Create User (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+250788654321\",\n  \"role\": \"user\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Create new user (Admin only)"
+          }
+        },
+        {
+          "name": "Search Users (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/search?q=john&page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "john"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Search users by various criteria (Admin only)"
+          }
+        },
+        {
+          "name": "Get User Stats (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "stats"
+              ]
+            },
+            "description": "Get user statistics (Admin only)"
+          }
+        },
+        {
+          "name": "Export Users (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/export",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "export"
+              ]
+            },
+            "description": "Export users data (Admin only)"
+          }
+        },
+        {
+          "name": "Bulk Update Users (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userIds\": [\"userId1\", \"userId2\"],\n  \"updates\": {\n    \"status\": \"active\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/bulk-update",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "bulk-update"
+              ]
+            },
+            "description": "Bulk update users (Admin only)"
+          }
+        },
+        {
+          "name": "Get User by ID (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{user_id}}"
+                }
+              ]
+            },
+            "description": "Get single user by ID (Admin only)"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Updated Name\",\n  \"lastName\": \"Updated LastName\",\n  \"phone\": \"+250788999888\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{user_id}}"
+                }
+              ]
+            },
+            "description": "Update user (own profile or Admin)"
+          }
+        },
+        {
+          "name": "Delete User (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{user_id}}"
+                }
+              ]
+            },
+            "description": "Delete user - soft delete (Admin only)"
+          }
+        },
+        {
+          "name": "Permanently Delete User (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/:id/permanent",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id",
+                "permanent"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{user_id}}"
+                }
+              ]
+            },
+            "description": "Permanently delete user (Admin only)"
+          }
+        },
+        {
+          "name": "Activate User (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/:id/activate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id",
+                "activate"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{user_id}}"
+                }
+              ]
+            },
+            "description": "Activate user (Admin only)"
+          }
+        },
+        {
+          "name": "Deactivate User (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/:id/deactivate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id",
+                "deactivate"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{user_id}}"
+                }
+              ]
+            },
+            "description": "Deactivate user (Admin only)"
+          }
+        },
+        {
+          "name": "Update User Role (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/:id/role",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id",
+                "role"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{user_id}}"
+                }
+              ]
+            },
+            "description": "Update user role (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "News",
+      "item": [
+        {
+          "name": "Get All News",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news?page=1&limit=10&category=politics&status=published",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "category",
+                  "value": "politics"
+                },
+                {
+                  "key": "status",
+                  "value": "published"
+                }
+              ]
+            },
+            "description": "Get all news with filtering and pagination"
+          }
+        },
+        {
+          "name": "Get Featured News",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news/featured",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "featured"
+              ]
+            },
+            "description": "Get featured news articles"
+          }
+        },
+        {
+          "name": "Get Latest News",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news/latest",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "latest"
+              ]
+            },
+            "description": "Get latest news articles"
+          }
+        },
+        {
+          "name": "Get Popular News",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news/popular",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "popular"
+              ]
+            },
+            "description": "Get popular news (by views)"
+          }
+        },
+        {
+          "name": "Search News",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news/search?q=government&page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "government"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Search news articles"
+          }
+        },
+        {
+          "name": "Get News by Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news/category/:category?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "category",
+                ":category"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "category",
+                  "value": "politics"
+                }
+              ]
+            },
+            "description": "Get news by specific category"
+          }
+        },
+        {
+          "name": "Create News (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Breaking News: New Government Initiative\",\n  \"content\": \"Detailed content of the news article...\",\n  \"summary\": \"Brief summary of the article\",\n  \"category\": \"politics\",\n  \"tags\": [\"government\", \"initiative\", \"policy\"],\n  \"status\": \"published\",\n  \"featured\": false,\n  \"priority\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/news",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news"
+              ]
+            },
+            "description": "Create new news article (Admin only)"
+          }
+        },
+        {
+          "name": "Get News Stats (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news/admin/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "admin",
+                "stats"
+              ]
+            },
+            "description": "Get news statistics (Admin only)"
+          }
+        },
+        {
+          "name": "Bulk Update News Status (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newsIds\": [\"newsId1\", \"newsId2\"],\n  \"status\": \"published\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/news/admin/bulk-update-status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "admin",
+                "bulk-update-status"
+              ]
+            },
+            "description": "Bulk update news status (Admin only)"
+          }
+        },
+        {
+          "name": "Get News by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "news_id_here"
+                }
+              ]
+            },
+            "description": "Get single news article by ID"
+          }
+        },
+        {
+          "name": "Update News (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated News Title\",\n  \"content\": \"Updated content...\",\n  \"status\": \"published\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/news/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "news_id_here"
+                }
+              ]
+            },
+            "description": "Update news article (Admin only)"
+          }
+        },
+        {
+          "name": "Delete News (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "news_id_here"
+                }
+              ]
+            },
+            "description": "Delete news article (Admin only)"
+          }
+        },
+        {
+          "name": "Increment View Count",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news/:id/view",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                ":id",
+                "view"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "news_id_here"
+                }
+              ]
+            },
+            "description": "Increment view count for news article"
+          }
+        },
+        {
+          "name": "Toggle Like",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/news/:id/like",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                ":id",
+                "like"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "news_id_here"
+                }
+              ]
+            },
+            "description": "Like/unlike news article"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feedback",
+      "item": [
+        {
+          "name": "Get All Feedback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/feedback?page=1&limit=10&status=approved",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feedback"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "approved"
+                }
+              ]
+            },
+            "description": "Get all feedback with pagination and filtering"
+          }
+        },
+        {
+          "name": "Submit Feedback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"subject\": \"Great Service\",\n  \"message\": \"I really appreciate the quality of news coverage on your platform.\",\n  \"category\": \"compliment\",\n  \"rating\": 5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/feedback",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feedback"
+              ]
+            },
+            "description": "Submit new feedback"
+          }
+        },
+        {
+          "name": "Get Feedback by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/feedback/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feedback",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "feedback_id_here"
+                }
+              ]
+            },
+            "description": "Get single feedback by ID"
+          }
+        },
+        {
+          "name": "Like Feedback",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/feedback/:id/like",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feedback",
+                ":id",
+                "like"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "feedback_id_here"
+                }
+              ]
+            },
+            "description": "Like feedback"
+          }
+        },
+        {
+          "name": "Update Feedback Status (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\",\n  \"adminNotes\": \"Good feedback, approved for public display\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/feedback/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feedback",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "feedback_id_here"
+                }
+              ]
+            },
+            "description": "Update feedback status (Admin only)"
+          }
+        },
+        {
+          "name": "Delete Feedback (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/feedback/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feedback",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "feedback_id_here"
+                }
+              ]
+            },
+            "description": "Delete feedback (Admin only)"
+          }
+        },
+        {
+          "name": "Get Feedback Stats (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/feedback/admin/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feedback",
+                "admin",
+                "stats"
+              ]
+            },
+            "description": "Get feedback statistics (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Help Requests",
+      "item": [
+        {
+          "name": "Submit Help Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Smith\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"+250788123456\",\n  \"subject\": \"Technical Issue\",\n  \"description\": \"I'm having trouble accessing my account\",\n  \"category\": \"technical\",\n  \"priority\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/help-requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "help-requests"
+              ]
+            },
+            "description": "Submit new help request"
+          }
+        },
+        {
+          "name": "Get All Help Requests (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/help-requests?page=1&limit=10&status=open",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "help-requests"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "open"
+                }
+              ]
+            },
+            "description": "Get all help requests (Admin only)"
+          }
+        },
+        {
+          "name": "Get Help Request Stats (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/help-requests/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "help-requests",
+                "stats"
+              ]
+            },
+            "description": "Get help request statistics (Admin only)"
+          }
+        },
+        {
+          "name": "Get Help Request by ID (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/help-requests/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "help-requests",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "help_request_id_here"
+                }
+              ]
+            },
+            "description": "Get specific help request (Admin only)"
+          }
+        },
+        {
+          "name": "Update Help Request (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\",\n  \"adminNotes\": \"Working on this issue\",\n  \"resolution\": \"Partial resolution provided\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/help-requests/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "help-requests",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "help_request_id_here"
+                }
+              ]
+            },
+            "description": "Update help request (Admin only)"
+          }
+        },
+        {
+          "name": "Assign Help Request (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedTo\": \"admin_user_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/help-requests/:id/assign",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "help-requests",
+                ":id",
+                "assign"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "help_request_id_here"
+                }
+              ]
+            },
+            "description": "Assign help request to admin (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Get Overview Stats (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/overview",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "overview"
+              ]
+            },
+            "description": "Get dashboard overview statistics (Admin only)"
+          }
+        },
+        {
+          "name": "Get User Analytics (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "users"
+              ]
+            },
+            "description": "Get user statistics (Admin only)"
+          }
+        },
+        {
+          "name": "Get News Analytics (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/news",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "news"
+              ]
+            },
+            "description": "Get news statistics (Admin only)"
+          }
+        },
+        {
+          "name": "Get Feedback Analytics (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/feedback",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "feedback"
+              ]
+            },
+            "description": "Get feedback statistics (Admin only)"
+          }
+        },
+        {
+          "name": "Get Help Request Analytics (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/help-requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "help-requests"
+              ]
+            },
+            "description": "Get help request statistics (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Get System Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "settings"
+              ]
+            },
+            "description": "Get system settings (Public)"
+          }
+        },
+        {
+          "name": "Update System Settings (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"siteName\": \"Rugalika News\",\n  \"siteDescription\": \"Official Government News Portal\",\n  \"maintenanceMode\": false,\n  \"allowRegistration\": true,\n  \"maxFileSize\": \"50MB\",\n  \"allowedFileTypes\": [\"jpg\", \"jpeg\", \"png\", \"pdf\", \"doc\", \"docx\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "settings"
+              ]
+            },
+            "description": "Update system settings (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "item": [
+        {
+          "name": "Upload Image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/image",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "upload",
+                "image"
+              ]
+            },
+            "description": "Upload single image file"
+          }
+        },
+        {
+          "name": "Upload Video",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/video",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "upload",
+                "video"
+              ]
+            },
+            "description": "Upload single video file"
+          }
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "document",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/document",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "upload",
+                "document"
+              ]
+            },
+            "description": "Upload single document file"
+          }
+        },
+        {
+          "name": "Upload Multiple Files",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/multiple",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "upload",
+                "multiple"
+              ]
+            },
+            "description": "Upload multiple files (up to 10)"
+          }
+        },
+        {
+          "name": "Get Upload Stats (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/upload/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "upload",
+                "stats"
+              ]
+            },
+            "description": "Get upload statistics (Admin only)"
+          }
+        }
+      ]
+    }
+  ]
+}

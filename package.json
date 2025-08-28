@@ -9,7 +9,11 @@
     "dev": "nodemon src/app.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "postinstall": "npm run build",
+    "deploy": "npm run build && npm start",
+    "clean": "rm -rf dist/",
+    "rebuild": "npm run clean && npm run build"
   },
   "keywords": [
     "news",
