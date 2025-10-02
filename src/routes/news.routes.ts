@@ -6,11 +6,9 @@ import {
   optionalAuth,
   validate,
   validateObjectId,
-  validatePagination,
-  uploadMixedFiles,
-  processUploadedFiles,
-  cleanupOnError
+  validatePagination
 } from '../middleware';
+import { cloudinaryService } from '../services';
 import { newsValidation } from '../utils/validation';
 
 const router = Router();
@@ -89,9 +87,12 @@ router.post(
   '/',
   authenticate,
   adminOnly,
-  uploadMixedFiles(),
-  processUploadedFiles,
-  cleanupOnError,
+  cloudinaryService.getMixedUploadMiddleware([
+    { name: 'mainImage', maxCount: 1 },
+    { name: 'subImages', maxCount: 10 },
+    { name: 'videos', maxCount: 3 },
+    { name: 'documents', maxCount: 5 }
+  ]),
   validate(newsValidation.create),
   newsController.createNews
 );
@@ -146,9 +147,12 @@ router.put(
   authenticate,
   adminOnly,
   validateObjectId('id'),
-  uploadMixedFiles(),
-  processUploadedFiles,
-  cleanupOnError,
+  cloudinaryService.getMixedUploadMiddleware([
+    { name: 'mainImage', maxCount: 1 },
+    { name: 'subImages', maxCount: 10 },
+    { name: 'videos', maxCount: 3 },
+    { name: 'documents', maxCount: 5 }
+  ]),
   validate(newsValidation.update),
   newsController.updateNews
 );

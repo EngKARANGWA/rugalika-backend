@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { database } from '../utils';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import newsRoutes from './news.routes';
@@ -11,12 +12,16 @@ import uploadRoutes from './upload.routes';
 const router = Router();
 
 // Health check endpoint
-router.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Rugalika News API is healthy',
+router.get('/health', async (req, res) => {
+  const dbHealth = await database.healthCheck();
+  const overallHealthy = dbHealth.status === 'healthy';
+
+  res.status(overallHealthy ? 200 : 503).json({
+    success: overallHealthy,
+    message: overallHealthy ? 'Rugalika News API is healthy' : 'Service degraded',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    database: dbHealth
   });
 });
 

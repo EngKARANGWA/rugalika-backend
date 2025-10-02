@@ -114,23 +114,33 @@ export const createNews = asyncHandler(async (req: Request, res: Response): Prom
     newsData.content = sanitizeHtml(newsData.content);
   }
 
-  // Process uploaded files if any
-  if (req.body.filesInfo) {
-    const { mainImage, subImages, videos, documents } = req.body.filesInfo;
+  // Process uploaded files from Cloudinary if any
+  if (req.files) {
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     
-    if (mainImage) {
-      newsData.mainImage = mainImage.url;
+    // Handle main image
+    if (files.mainImage && files.mainImage[0]) {
+      const mainImageFile = files.mainImage[0];
+      // Extract Cloudinary data
+      const cloudinaryData = (mainImageFile as any).cloudinaryData || {};
+      newsData.mainImage = cloudinaryData.secure_url || cloudinaryData.url || '';
     }
     
     // Process sub-contents with media
     if (newsData.subContents) {
       newsData.subContents.forEach((subContent: any, index: number) => {
-        if (subContent.type === 'image' && subImages && subImages[index]) {
-          subContent.mediaUrl = subImages[index].url;
-        } else if (subContent.type === 'video' && videos && videos[index]) {
-          subContent.mediaUrl = videos[index].url;
-        } else if (subContent.type === 'pdf' && documents && documents[index]) {
-          subContent.mediaUrl = documents[index].url;
+        if (subContent.type === 'image' && files.subImages && files.subImages[index]) {
+          const imageFile = files.subImages[index];
+          const cloudinaryData = (imageFile as any).cloudinaryData || {};
+          subContent.mediaUrl = cloudinaryData.secure_url || cloudinaryData.url || '';
+        } else if (subContent.type === 'video' && files.videos && files.videos[index]) {
+          const videoFile = files.videos[index];
+          const cloudinaryData = (videoFile as any).cloudinaryData || {};
+          subContent.mediaUrl = cloudinaryData.secure_url || cloudinaryData.url || '';
+        } else if (subContent.type === 'pdf' && files.documents && files.documents[index]) {
+          const docFile = files.documents[index];
+          const cloudinaryData = (docFile as any).cloudinaryData || {};
+          subContent.mediaUrl = cloudinaryData.secure_url || cloudinaryData.url || '';
         }
       });
     }
@@ -152,21 +162,25 @@ export const createNews = asyncHandler(async (req: Request, res: Response): Prom
       'News article created successfully'
     ));
   } catch (error: any) {
-    // Clean up uploaded files if news creation fails
-    if (req.body.filesInfo) {
+    // Clean up uploaded files from Cloudinary if news creation fails
+    if (req.files) {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       const filesToDelete: string[] = [];
       
-      Object.values(req.body.filesInfo).forEach((fileInfo: any) => {
-        if (Array.isArray(fileInfo)) {
-          filesToDelete.push(...fileInfo.map((f: any) => f.path));
-        } else if (fileInfo && fileInfo.path) {
-          filesToDelete.push(fileInfo.path);
-        }
+      Object.values(files).forEach((fileArray: Express.Multer.File[]) => {
+        fileArray.forEach((file: Express.Multer.File) => {
+          const cloudinaryData = (file as any).cloudinaryData || {};
+          if (cloudinaryData.public_id) {
+            filesToDelete.push(cloudinaryData.public_id);
+          }
+        });
       });
       
       if (filesToDelete.length > 0) {
-        uploadService.deleteFiles(filesToDelete).catch(deleteError => {
-          logger.error('Error cleaning up files after news creation failure:', deleteError);
+        // Import cloudinaryService here to avoid circular dependency
+        const { cloudinaryService } = await import('../services');
+        cloudinaryService.deleteFiles(filesToDelete).catch(deleteError => {
+          logger.error('Error cleaning up Cloudinary files after news creation failure:', deleteError);
         });
       }
     }
@@ -194,23 +208,33 @@ export const updateNews = asyncHandler(async (req: Request, res: Response): Prom
   delete updates.views;
   delete updates.likes;
 
-  // Process uploaded files if any
-  if (req.body.filesInfo) {
-    const { mainImage, subImages, videos, documents } = req.body.filesInfo;
+  // Process uploaded files from Cloudinary if any
+  if (req.files) {
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     
-    if (mainImage) {
-      updates.mainImage = mainImage.url;
+    // Handle main image
+    if (files.mainImage && files.mainImage[0]) {
+      const mainImageFile = files.mainImage[0];
+      // Extract Cloudinary data
+      const cloudinaryData = (mainImageFile as any).cloudinaryData || {};
+      updates.mainImage = cloudinaryData.secure_url || cloudinaryData.url || '';
     }
     
     // Process sub-contents with media
     if (updates.subContents) {
       updates.subContents.forEach((subContent: any, index: number) => {
-        if (subContent.type === 'image' && subImages && subImages[index]) {
-          subContent.mediaUrl = subImages[index].url;
-        } else if (subContent.type === 'video' && videos && videos[index]) {
-          subContent.mediaUrl = videos[index].url;
-        } else if (subContent.type === 'pdf' && documents && documents[index]) {
-          subContent.mediaUrl = documents[index].url;
+        if (subContent.type === 'image' && files.subImages && files.subImages[index]) {
+          const imageFile = files.subImages[index];
+          const cloudinaryData = (imageFile as any).cloudinaryData || {};
+          subContent.mediaUrl = cloudinaryData.secure_url || cloudinaryData.url || '';
+        } else if (subContent.type === 'video' && files.videos && files.videos[index]) {
+          const videoFile = files.videos[index];
+          const cloudinaryData = (videoFile as any).cloudinaryData || {};
+          subContent.mediaUrl = cloudinaryData.secure_url || cloudinaryData.url || '';
+        } else if (subContent.type === 'pdf' && files.documents && files.documents[index]) {
+          const docFile = files.documents[index];
+          const cloudinaryData = (docFile as any).cloudinaryData || {};
+          subContent.mediaUrl = cloudinaryData.secure_url || cloudinaryData.url || '';
         }
       });
     }
@@ -249,6 +273,17 @@ export const deleteNews = asyncHandler(async (req: Request, res: Response): Prom
 
   const news = await News.findById(id);
   
+  // Helper function to extract public ID from Cloudinary URL
+  const extractPublicIdFromUrl = (url: string): string | null => {
+    try {
+      // Cloudinary URL format: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/folder/filename.jpg
+      const match = url.match(/\/upload\/[^\/]+\/(.+?)(?:\.[^\/]+)?$/);
+      return match ? match[1] : null;
+    } catch (error) {
+      return null;
+    }
+  };
+  
   if (!news) {
     res.status(404).json(createResponse(
       false,
@@ -258,31 +293,37 @@ export const deleteNews = asyncHandler(async (req: Request, res: Response): Prom
     return;
   }
 
-  // Collect file paths to delete
+  // Collect Cloudinary public IDs to delete
   const filesToDelete: string[] = [];
   
   // Add main image
   if (news.mainImage) {
-    // Extract file path from URL (assuming URL structure)
-    const urlPath = new URL(news.mainImage).pathname;
-    filesToDelete.push(urlPath.replace('/uploads/', './uploads/'));
+    // Extract public ID from Cloudinary URL
+    const publicId = extractPublicIdFromUrl(news.mainImage);
+    if (publicId) {
+      filesToDelete.push(publicId);
+    }
   }
   
   // Add sub-content media files
   news.subContents.forEach(subContent => {
     if (subContent.mediaUrl) {
-      const urlPath = new URL(subContent.mediaUrl).pathname;
-      filesToDelete.push(urlPath.replace('/uploads/', './uploads/'));
+      const publicId = extractPublicIdFromUrl(subContent.mediaUrl);
+      if (publicId) {
+        filesToDelete.push(publicId);
+      }
     }
   });
 
   // Delete the news article
   await News.findByIdAndDelete(id);
 
-  // Delete associated files
+  // Delete associated files from Cloudinary
   if (filesToDelete.length > 0) {
-    uploadService.deleteFiles(filesToDelete).catch(error => {
-      logger.error('Error deleting files after news deletion:', error);
+    // Import cloudinaryService here to avoid circular dependency
+    const { cloudinaryService } = await import('../services');
+    cloudinaryService.deleteFiles(filesToDelete).catch(error => {
+      logger.error('Error deleting Cloudinary files after news deletion:', error);
     });
   }
 

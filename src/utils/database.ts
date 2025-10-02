@@ -26,19 +26,44 @@ class Database {
         throw new Error('MONGODB_URI environment variable is not set');
       }
 
+      const maxRetries = parseInt(process.env.DB_CONNECT_MAX_RETRIES || '5');
+      const baseDelayMs = parseInt(process.env.DB_CONNECT_RETRY_BASE_MS || '1000');
+      const allowStartWithoutDb = (process.env.ALLOW_START_WITHOUT_DB || 'false').toLowerCase() === 'true';
+
       // Connection options
       const options = {
         maxPoolSize: 10, // Maintain up to 10 socket connections
         serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
         socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-        bufferMaxEntries: 0, // Disable mongoose buffering
-        bufferCommands: false, // Disable mongoose buffering
       };
 
-      await mongoose.connect(mongoUri, options);
-      
-      this.isConnected = true;
-      logger.info('Successfully connected to MongoDB');
+      let attempt = 0;
+      // Retry with exponential backoff
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        try {
+          attempt += 1;
+          await mongoose.connect(mongoUri, options);
+          this.isConnected = true;
+          logger.info('Successfully connected to MongoDB');
+          break;
+        } catch (connectError) {
+          this.isConnected = false;
+          const isLastAttempt = attempt >= maxRetries;
+          logger.error(`MongoDB connection attempt ${attempt} failed:`, connectError as Error);
+
+          if (isLastAttempt) {
+            if (allowStartWithoutDb) {
+              logger.warn('Max DB connection attempts reached. Continuing without database connection due to ALLOW_START_WITHOUT_DB=true');
+              break;
+            }
+            throw connectError;
+          }
+
+          const delay = baseDelayMs * Math.pow(2, attempt - 1);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
 
       // Handle connection events
       mongoose.connection.on('error', (error) => {
