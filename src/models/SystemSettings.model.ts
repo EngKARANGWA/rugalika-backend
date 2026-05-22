@@ -73,8 +73,6 @@ const systemSettingsSchema = new Schema<ISystemSettingsDocument>({
   }
 });
 
-// Ensure only one settings document exists
-systemSettingsSchema.index({ _id: 1 }, { unique: true });
 
 // Static method to get or create settings
 systemSettingsSchema.statics.getSettings = async function() {
