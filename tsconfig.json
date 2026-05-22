@@ -19,19 +19,7 @@
     "strictFunctionTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "ignoreDeprecations": "6.0",
-    "moduleResolution": "node",
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["src/*"],
-      "@/controllers/*": ["src/controllers/*"],
-      "@/models/*": ["src/models/*"],
-      "@/routes/*": ["src/routes/*"],
-      "@/middleware/*": ["src/middleware/*"],
-      "@/services/*": ["src/services/*"],
-      "@/utils/*": ["src/utils/*"],
-      "@/types/*": ["src/types/*"]
-    }
+    "moduleResolution": "bundler"
   },
   "include": [
     "src/**/*"
