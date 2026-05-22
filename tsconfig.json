@@ -19,6 +19,7 @@
     "strictFunctionTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "ignoreDeprecations": "5.0",
     "moduleResolution": "node",
     "baseUrl": "./",
     "paths": {
